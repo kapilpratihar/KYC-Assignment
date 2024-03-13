@@ -1,0 +1,146 @@
+﻿@model IEnumerable<DBfirst.Models.Employee>
+@using System.Globalization
+@using System.Collections.Generic
+@{
+    ViewData["Title"] = "Index";
+    var searchString = ViewData["CurrentFilter"] as string;
+    var gender = ViewData["CurrentGender"] as string;
+    var startDate = ViewData["CurrentStartDate"] as DateTime?;
+    var endDate = ViewData["CurrentEndDate"] as DateTime?;
+    var selectedCountries = ViewData["CurrentCountries"] as string;
+}
+
+@functions {
+    public static List<string> GetAllCountries()
+    {
+        
+        var cultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
+        var countries = new List<string>();
+        foreach (var culture in cultures)
+        {
+            var region = new RegionInfo(culture.Name);
+            if (!countries.Contains(region.EnglishName))
+            {
+                countries.Add(region.EnglishName);
+            }
+        }
+        
+        countries.Sort(); 
+        countries.Add("Not Selected");
+        return countries;
+    }
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</p>
+
+
+<form id="filterForm" asp-action="Index">
+    <div class="form-group">
+        <label for="searchString">Search:</label>
+        <input type="text" name="searchString" value="@searchString" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="gender">Gender:</label>
+        <select name="gender" asp-for="@gender" class="form-control">
+            <option value="">All</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Non-binary">Non-binary</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="startDate">Start Date:</label>
+        <input type="date" name="startDate" value="@startDate?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="endDate">End Date:</label>
+        <input type="date" name="endDate" value="@endDate?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="form-group">
+       <label for="countries">Country:</label>
+        <select name="selectedCountries" asp-for="@selectedCountries" class="form-control">
+            @{
+            var allCountries = GetAllCountries();
+            
+            foreach (var country in allCountries)
+            {
+                var selectedAttribute = selectedCountries == country ? "selected" : "";
+                <option value="@country" selected="@selectedAttribute">@country</option>
+            }
+            
+        }
+        </select>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        
+        <div class="form-group">
+        <button type="submit" class="btn btn-danger" onclick="resetFilters()">Remove Filter</button>
+        </div>
+    </div>
+</form>
+<script>
+    function resetFilters() {
+        document.querySelector('select[name="selectedCountries"]').value = 'NewYork';
+        document.getElementById("filterForm").reset(); // Reset the form fields
+    }
+</script>
+
+<table class="table">
+    <thead>
+        <tr>
+           <th>
+                @Html.DisplayNameFor(model => model.FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Surname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Country)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.City)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Gender)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                    @Html.DisplayFor(modelItem => item.FirstName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Surname)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Country)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.City)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Gender)
+                </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
